@@ -104,8 +104,8 @@
 			});
 			$('#delete').bind('click',function(){
 				delete localStorage[$('#passage h1').text()];
-				$('#passageList p').each(function(item){
-					if (!(item in localStorage)){
+				$('#passageList p').each(function(...args){
+					if (!($(this).text() in localStorage)){
 						$(this).remove();
 					}
 				})
