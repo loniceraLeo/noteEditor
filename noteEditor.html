@@ -62,7 +62,7 @@
 			function putPassageIntoStack(name){
 				$('<p class="hisBlock">').text(JSON.parse(localStorage[name]).pHeader).bind('click',function(){
 					$('#passage h1').text(JSON.parse(localStorage[name]).pHeader);
-					$('#passage #innerLines>p').replaceWith(marked(JSON.parse(localStorage[name]).pContent));
+					$('#passage #innerLines').html(marked(JSON.parse(localStorage[name]).pContent));
 				}).hover(function(){$(this).css('background','#ccc')},function(){
 					$(this).css('background','#fff')
 				}).appendTo('#passageList');
@@ -82,6 +82,7 @@
 				$(this).css('background','#fff');
 			});			
 			$('#post').bind('click',function(...args){
+
 				let header=$('input').val();
 				let content=$('textarea').val();
 				$('#passage h1').text(header);//$(marked(content)).replaceAll($('#passage p'));
@@ -92,10 +93,13 @@
 					$('#passage #innerLines>p').replaceWith(marked(content));
 					putPassageIntoStack(header);
 				}else {
-					let iniObject=JSON.parse(localStorage[header]);
-					iniObject.pContent=content,iniObject.date=new Date().toString();
-					$('#passage>#innerLines').html(marked(iniObject.pContent));
-					localStorage[header]=JSON.stringify(iniObject);
+					let checked=confirm('rewrite your passage?');
+					if (checked){
+						let iniObject=JSON.parse(localStorage[header]);
+						iniObject.pContent=content,iniObject.date=new Date().toString();
+						$('#passage>#innerLines').html(marked(iniObject.pContent));
+						localStorage[header]=JSON.stringify(iniObject);
+					}
 				}
 			});
 			$('#edit').bind('click',function(...args){
@@ -103,14 +107,17 @@
 				$('textarea').val(JSON.parse(localStorage[$('#passage h1').text()]).pContent);
 			});
 			$('#delete').bind('click',function(){
-				delete localStorage[$('#passage h1').text()];
-				$('#passageList p').each(function(...args){
-					if (!($(this).text() in localStorage)){
-						$(this).remove();
-					}
-				})
-				$('#passage h1').text('');
-				$('#passage p').text('');
+				let checked=confirm('Delete your passage?')
+				if (checked){
+					delete localStorage[$('#passage h1').text()];
+					$('#passageList p').each(function(...args){
+						if (!($(this).text() in localStorage)){
+							$(this).remove();
+						}
+					})
+					$('#passage h1').text('');
+					$('#passage p').text('');
+				}
 			});
 		})
 	</script>
