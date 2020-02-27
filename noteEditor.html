@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+	<script src="https://unpkg.com/marked@0.3.6"></script>
+	<meta charset="utf-8">
+	<meta name='author' content="lonicera">
+	<title>noteEditorver1.0</title>
+</head>
+<body>
+	<script type="text/javascript">
+		let img=new Image();
+		img.src='http://192.168.2.104:1000/resource/pic.jpg';
+	</script>
+	<style type="text/css">
+		.confirmButton{
+			width: 75px;
+			height: 30px;
+			position: relative;
+			top : 2px ; 
+			background: #fff; 
+			outline: none;
+			border:1.5px solid black;
+			border-radius: 10px;
+			font-size: 15px;
+		}
+		*{
+			outline: none;
+		}
+		textarea{
+			font-size: 16px;
+		}
+		*.p{
+			margin: 3px;
+		}
+		#passage{
+			box-shadow: 6px 6px 1px #ccc
+		}
+	</style>
+	<div style="width: 500px;height: 494px;border: solid .8px black ;border-radius: 3px;overflow: scroll;background: rgba(255,255,255,0.5);" id='passage'>
+		<div id='innerLines'></div>
+	</div>
+	<div id='passageList' style="width: 330px;height: 96%;border:1.8px solid black;position: fixed;top: 10px;left: 550px;box-shadow: 6px 6px 3px #ccc;overflow: auto;" id='history'><h3 style="text-align: center;">Index</h3><hr style="color: #ccc;padding: 0px"></div>
+	<div style="position: fixed;top:500px;">
+		<input type="text" name="header" placeholder="Header.." style="height: 30px;border-radius: 10px;padding : 4px ; font-size: 20px ; outline: none;"><button class="confirmButton" id='post'>post</button><button class="confirmButton" id='edit'>edit</button><button class="confirmButton" id='delete'>delete</button> <br>
+		<textarea style="height: 190px;width: 520px;border:1.2px solid black;padding: 3px" placeholder="Content...;"></textarea>
+	</div>
+	<style type="text/css">
+		#passageList p{
+			font-weight: bold;
+		}
+	</style>
+	<script type="text/javascript">
+		$(_=>{
+			let index=0;
+			let keys=Object.keys(localStorage);
+			$('<h1>').prependTo('#passage');
+			$('<p>').appendTo('#innerLines');
+			$('*:not(body)').not('textarea').not('input').not('hr').css('padding','2px');
+			$('#passage').css('padding','10px');
+
+			function putPassageIntoStack(name){
+				$('<p class="hisBlock">').text(JSON.parse(localStorage[name]).pHeader).bind('click',function(){
+					$('#passage h1').text(JSON.parse(localStorage[name]).pHeader);
+					$('#passage #innerLines>p').replaceWith(marked(JSON.parse(localStorage[name]).pContent));
+				}).hover(function(){$(this).css('background','#ccc')},function(){
+					$(this).css('background','#fff')
+				}).appendTo('#passageList');
+			}
+
+			(function(){
+				for (let name in localStorage){
+					if (name!=='length'&&name!=='key'&&name!=='getItem'&&name!=='setItem'&&name!=='removeItem'&&name!=='clear'&&name){
+						let iniObject=JSON.parse(localStorage[name]);
+						putPassageIntoStack(name);
+					}
+				}
+			})();
+			$('button').hover(function(){
+				$(this).css('background','rgba(240,160,240,0.5)')
+			},function(){
+				$(this).css('background','#fff');
+			});			
+			$('#post').bind('click',function(...args){
+				let header=$('input').val();
+				let content=$('textarea').val();
+				$('#passage h1').text(header);//$(marked(content)).replaceAll($('#passage p'));
+				if (!(header in localStorage)){
+					let storageObject={};
+					storageObject.pHeader=header,storageObject.pContent=content,storageObject.date=new Date().toString();
+					localStorage[header]=JSON.stringify(storageObject);
+					$('#passage #innerLines>p').replaceWith(marked(content));
+					putPassageIntoStack(header);
+				}else {
+					let iniObject=JSON.parse(localStorage[header]);
+					iniObject.pContent=content,iniObject.date=new Date().toString();
+					$('#passage>#innerLines').html(marked(iniObject.pContent));
+					localStorage[header]=JSON.stringify(iniObject);
+				}
+			});
+			$('#edit').bind('click',function(...args){
+				$('input').val($('#passage h1').text());
+				$('textarea').val(JSON.parse(localStorage[$('#passage h1').text()]).pContent);
+			});
+			$('#delete').bind('click',function(){
+				delete localStorage[$('#passage h1').text()];
+				$('#passageList p').each(function(item){
+					if (!(item in localStorage)){
+						$(this).remove();
+					}
+				})
+				$('#passage h1').text('');
+				$('#passage p').text('');
+			});
+		})
+	</script>
+</body>
+</html>
